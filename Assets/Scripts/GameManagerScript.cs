@@ -16,6 +16,11 @@ public class GameManager : MonoBehaviour {
   [SerializeField] private Image levelSelectPrefab;
   [SerializeField] private GameObject playAgainButton;
 
+  [Header("Title Elements")]
+  [SerializeField] private GameObject titleAnimation;
+  [SerializeField] private GameObject scrollingTitle;
+  [SerializeField] private GameObject titlePanel;
+
   private List<Transform> pieces;
   private Vector2Int dimensions;
   private float width;
@@ -26,7 +31,11 @@ public class GameManager : MonoBehaviour {
 
   private int piecesCorrect;
 
-  void Start() {
+
+
+  public void GeneratePuzzleSelection()
+  {
+    titlePanel.SetActive(false);
     // Create the UI
     foreach (Texture2D texture in imageTextures) {
       Image image = Instantiate(levelSelectPrefab, levelSelectPanel);
@@ -167,6 +176,13 @@ public class GameManager : MonoBehaviour {
 
 void Update()
 {
+    if (titleAnimation.transform.localPosition.x >=9)
+    {
+        titleAnimation.SetActive(false);
+        scrollingTitle.SetActive(false);
+        titlePanel.SetActive(true);
+    }
+    
     if (Input.GetMouseButtonDown(0))
     {
         RaycastHit2D hit= Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -238,6 +254,15 @@ public void RestartGame()
     playAgainButton.SetActive(false);
     levelSelectPanel.gameObject.SetActive(true);
 
+}
+
+public void QuitToMenu()
+{
+    foreach (Transform piece in pieces)
+    {
+        Destroy (piece.gameObject);       
+    }
+    titlePanel.SetActive(true);
 }
 
 }
