@@ -4,22 +4,30 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
+  public static GameManager instance;
+  
   [Header("Game Elements")]
   [Range(2, 6)]
   [SerializeField] private int difficulty = 4;
   [SerializeField] private Transform gameHolder;
   [SerializeField] private Transform piecePrefab;
 
+  [Header("Audio Manager")]
+  public AudioManager audioManager;
+
   [Header("UI Elements")]
   [SerializeField] private List<Texture2D> imageTextures;
   [SerializeField] private Transform levelSelectPanel;
   [SerializeField] private Image levelSelectPrefab;
   [SerializeField] private GameObject playAgainButton;
+  [SerializeField] private Button startButton;
 
   [Header("Title Elements")]
   [SerializeField] private GameObject titleAnimation;
   [SerializeField] private GameObject scrollingTitle;
   [SerializeField] private GameObject titlePanel;
+
+
 
   private List<Transform> pieces;
   private Vector2Int dimensions;
@@ -31,11 +39,16 @@ public class GameManager : MonoBehaviour {
 
   private int piecesCorrect;
 
-
-
+  void Start() {
+    if (instance == null) {
+      instance = this;
+    } else {
+      Destroy(gameObject);
+    }
+  }
+  
   public void GeneratePuzzleSelection()
   {
-    titlePanel.SetActive(false);
     // Create the UI
     foreach (Texture2D texture in imageTextures) {
       Image image = Instantiate(levelSelectPrefab, levelSelectPanel);
@@ -180,9 +193,9 @@ void Update()
     {
         titleAnimation.SetActive(false);
         scrollingTitle.SetActive(false);
-        titlePanel.SetActive(true);
     }
-    
+    OpenstartMenu();
+
     if (Input.GetMouseButtonDown(0))
     {
         RaycastHit2D hit= Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -211,6 +224,14 @@ void Update()
     }
 }
 
+private void OpenstartMenu()
+{
+  if (!titleAnimation.activeSelf)
+  {
+    titlePanel.SetActive(true);
+  }
+}
+
 private void SnapAndDisableIfCorrect()
 {
     int pieceIndex = pieces.IndexOf(draggingPiece);
@@ -232,6 +253,8 @@ private void SnapAndDisableIfCorrect()
         
         //increase number of pieces correctly placed
         piecesCorrect++;
+        //play sound
+        audioManager.OnPuzzleSnap();
         if (piecesCorrect == pieces.Count)
         {
             playAgainButton.SetActive(true);
