@@ -20,12 +20,18 @@ public class GameManager : MonoBehaviour {
   [SerializeField] private Transform levelSelectPanel;
   [SerializeField] private Image levelSelectPrefab;
   [SerializeField] private GameObject playAgainButton;
+  [SerializeField] private GameObject quitButton;
   [SerializeField] private Button startButton;
 
   [Header("Title Elements")]
   [SerializeField] private GameObject titleAnimation;
-  [SerializeField] private GameObject scrollingTitle;
+  
   [SerializeField] private GameObject titlePanel;
+  public bool titleAnimationComplete = false;
+
+  [Header ("Level Select Elements")]
+  [SerializeField] private GameObject levelSelectTitle;
+  [SerializeField] private GameObject BackToMenuButton;
 
 
 
@@ -49,6 +55,7 @@ public class GameManager : MonoBehaviour {
   
   public void GeneratePuzzleSelection()
   {
+    
     // Create the UI
     foreach (Texture2D texture in imageTextures) {
       Image image = Instantiate(levelSelectPrefab, levelSelectPanel);
@@ -58,9 +65,24 @@ public class GameManager : MonoBehaviour {
     }
   }
 
+  public void DestroyGeneratedPuzzleSelection()
+  {
+    foreach (Transform child in levelSelectPanel)
+    {
+      Destroy(child.gameObject);
+    }
+  }
+
   public void StartGame(Texture2D jigsawTexture) {
     // Hide the UI
     levelSelectPanel.gameObject.SetActive(false);
+    BackToMenuButton.gameObject.SetActive(false);
+    levelSelectTitle.gameObject.SetActive(false);
+
+    DestroyGeneratedPuzzleSelection();
+
+    //Reveal in puzzle buttons
+    quitButton.SetActive(true);
 
     // We store a list of the transform for each jigsaw piece so we can track them later.
     pieces = new List<Transform>();
@@ -189,12 +211,11 @@ public class GameManager : MonoBehaviour {
 
 void Update()
 {
-    if (titleAnimation.transform.localPosition.x >=9)
+   
+    if (!titleAnimationComplete)
     {
-        titleAnimation.SetActive(false);
-        scrollingTitle.SetActive(false);
+        TransitionToGameMenu();
     }
-    OpenstartMenu();
 
     if (Input.GetMouseButtonDown(0))
     {
@@ -224,12 +245,15 @@ void Update()
     }
 }
 
-private void OpenstartMenu()
+private void TransitionToGameMenu()
 {
-  if (!titleAnimation.activeSelf)
-  {
-    titlePanel.SetActive(true);
-  }
+    if (titleAnimation.transform.localPosition.x >=8)
+    {
+      Destroy(titleAnimation);
+      titlePanel.SetActive(true);
+      titleAnimationComplete = true;
+    }
+   
 }
 
 private void SnapAndDisableIfCorrect()
@@ -283,7 +307,9 @@ public void QuitToMenu()
 {
     foreach (Transform piece in pieces)
     {
-        Destroy (piece.gameObject);       
+        Destroy (piece.gameObject);
+        gameHolder.GetComponent<LineRenderer>().enabled = false;
+       
     }
     titlePanel.SetActive(true);
 }
